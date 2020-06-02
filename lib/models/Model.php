@@ -13,15 +13,15 @@
 
 namespace biny\lib;
 use App;
-use app\model\person;
 use ReflectionClass;
 use ReflectionException;
 
 /**
  * Class Model
  * @package biny\lib
- * @property person $person
- * @method person person($id)
+ * @property \app\model\person $person
+ * @method \app\model\person person($id)
+ * @method \app\model\team team($id)
  */
 class Model
 {
@@ -69,7 +69,7 @@ class Model
         if (is_callable([$class, 'init'])){
             return call_user_func_array([$class, 'init'], $params);
         } else {
-            $class = new ReflectionClass($class);
+            $class = new \ReflectionClass($class);
             return $class->newInstanceArgs($params);
         }
     }

@@ -31,15 +31,13 @@ class demoAction extends baseAction
         $lang && Language::setLanguage($lang, Constant::month);
         Logger::info('you can print some information in console like time: '.date('Y-m-d H:i:s'), 'info');
         $view = $this->display('demo/demo', ['lan'=>Language::getLanguage('cn')]);
-        $view->title = "Biny Framework Wiki";
+        $view->title = "Biny框架文档";
         return $view;
     }
 
     public function action_test()
     {
-        Event::on(onSql);
-        $ret = $this->userDAO->join($this->testDAO, ['id'=>'user_id'])
-            ->order([[],['type'=>['a','b','c','d','e']]])->order([['id'=>'desc']])->limit(2)->query();
-        return $this->correct($ret);
+        $ret = [];
+        $this->response->correct($ret['aaa'] === false);
     }
 }

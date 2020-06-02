@@ -23,13 +23,13 @@ class BinyException extends \ErrorException
      */
     public function __construct($code, $params=[], $html="500")
     {
-        $this->config = App::$base->config->get('exception');
-        $message = self::fmt_code($code, $params);
-        Event::trigger(onException, [$code, [$message, $this->getTraceAsString()]]);
-        if (class_exists('biny\lib\Database')){
-            Database::rollback();
-        }
         try{
+            $this->config = App::$base->config->get('exception');
+            $message = self::fmt_code($code, $params);
+            Event::trigger(onException, [$code, [$message, $this->getTraceAsString()]]);
+            if (class_exists('biny\lib\Database')){
+                Database::rollback();
+            }
             if (RUN_SHELL){
                 echo "<b>Fatal error</b>:  $message in <b>{$this->getFile()}</b>:<b>{$this->getLine()}</b>\nStack trace:\n{$this->getTraceAsString()}";
                 exit;
@@ -43,17 +43,21 @@ class BinyException extends \ErrorException
 
             } else {
                 if (App::$base->request->isShowTpl() || !App::$base->request->isAjax()){
-                    echo new Response($this->config["exceptionTpl"], ['msg'=>$this->config['messages'][$html] ?: "系统数据异常：$html"], $params);
+                    $params['webRoot'] = App::$base->router->rootPath;
+                    App::$base->response->display($this->config["exceptionTpl"], ['msg'=>$this->config['messages'][$html] ?: "系统数据异常：$html"], $params, false);
                 } else {
-                    $data = ["flag" => false, "error" => $this->config['messages'][$html] ?: "系统数据异常：$html"];
-                    echo new JSONResponse($data);
+                    echo App::$base->response->error($this->config['messages'][$html] ?: "系统数据异常：$html");
                 }
             }
             die();
         } catch (\Exception $ex) {
             //防止异常的死循环
-            echo "system Error";
-            exit;
+            if (SYS_DEBUG) {
+                echo "<b>Fatal error</b>: Endless loop <b>{$this->getFile()}</b>:<b>{$this->getLine()}</b>\nStack trace:\n{$this->getTraceAsString()}";
+            } else {
+                echo "SYSTEM ERROR";
+            }
+            die();
         }
     }
 
